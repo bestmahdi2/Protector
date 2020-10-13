@@ -9,14 +9,19 @@ class Enigma:
         self.r2 = "%c5rSnDv9f+_#-1lGMiRae7tH[jYJ2&~6@g,Os4UI$ypVQk=uEFhZbLXoN{K.8wPqxm]3B}zT;WC!Ad"
         self.r3 = "z%EGq_+aAl~jVKU7nt6$u.HWsfLdi=eSy!RT2]C@,xJgo[cB-YZv}PF39O4;Qw#5pbk1m8MXD{h&NIr"
 
+        forbiden = "آابپتثجچحخدذرزژسشصضظطغعفقکگلمنوهئی"
+
         plain = text
         cipher = ""
         self.state = 0
 
         for char in plain:
-            self.state += 1
-            cipher += self.enigma_one_char(char)
-            self.rotate_rotors()
+            if char not in forbiden:
+                self.state += 1
+                cipher += self.enigma_one_char(char)
+                self.rotate_rotors()
+            else:
+                cipher += char
 
         return cipher
 
@@ -91,22 +96,13 @@ class Private:
 
                     name = self.E.main(filename)
 
-                    print(filename, name, sep="   ")
+                    # print(filename, name, sep="   ")
 
                     rename(absulpathR, absulpathR.replace(filename, name))
 
-    # def unlock(self):
-    #     for (dirpath, dirname, filenames) in walk("."):
-    #         for filename in filenames:
-    #             if filename not in self.forbidden:
-    #                 absulpathR = path.abspath(sep.join([dirpath, filename]))
-    #
-    #                 name = self.E.main(filename)
-    #
-    #                 print(filename, name, sep="   ")
-    #
-    #                 rename(absulpathR, absulpathR.replace(filename, name))
 
-
-P = Private("D:\\MY Projects\\Python\\Protect\\")
-# E = Enigma(";mwp#s9qh") #"hihihi.hi")
+try:
+    P = Private("D:\\MY Projects\\Python\\Protect\\")
+except:
+    raise Exception
+    input()
