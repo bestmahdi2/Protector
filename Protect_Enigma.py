@@ -96,13 +96,21 @@ class Private:
 
                     name = self.E.main(filename)
 
-                    # print(filename, name, sep="   ")
-
                     rename(absulpathR, absulpathR.replace(filename, name))
+
+        for (dirpath, dirname, filenames) in walk("."):
+            for dir in dirname:
+                absulpathR = path.abspath(sep.join([dirpath, dir]))
+
+                name = self.E.main(dir)
+
+                rename(absulpathR, absulpathR.replace(dir, name))
+
 
 
 try:
-    P = Private("D:\\MY Projects\\Python\\Protect\\")
+    P = Private(".") #D:\\MY Projects\\Python\\Protect\\")
 except:
-    raise Exception
     input()
+    raise Exception
+
