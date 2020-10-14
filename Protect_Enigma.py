@@ -1,5 +1,6 @@
-from os import walk, rename, path, sep, chdir, listdir
-
+from platform import system as syst
+from os import walk, rename, path, sep, chdir, listdir, popen, getcwd
+from getpass import getpass
 
 class Enigma:
     def main(self, text):
@@ -58,16 +59,31 @@ class Enigma:
 
 
 class Private:
-    def __init__(self, dest):
+    def __init__(self, dest="."):
         self.forbidden = ["alaki.py", "zzz.py", "Protect.py"]
 
         self.E = Enigma()
-
         chdir(dest)
 
-        self.hidder()
+        pwd = getcwd()
+        self.main()
 
-    def hidder(self):
+        chdir(pwd)
+        if ".Thumbs.ms.{2227a280-3aea-1069-a2de-08002b30309d}" in listdir("."):
+            p = popen('attrib +h ' + ".\\.Thumbs.ms.{2227a280-3aea-1069-a2de-08002b30309d}")
+            p.close()
+        elif "sd" in listdir("."):
+            p = popen('attrib -h ' + ".\\sd")
+            p.close()
+
+    def getpw(self):
+        pw = getpass(prompt="\nEnter Password > ")
+        if pw == "badass 2":
+            return True
+        else:
+            return False
+
+    def main(self):
         lister = listdir('.')
 
         special = ".Thumbs.ms.{2227a280-3aea-1069-a2de-08002b30309d}"
@@ -76,41 +92,61 @@ class Private:
         if "zzz" in lister:
             rename(seps + "zzz", seps + special)
             chdir(special)
-            self.locker()
+            self.locker("hide", getcwd())
 
         elif "sd" in lister:
             rename(seps + "sd", seps + special)
             chdir(special)
-            self.locker()
+            self.locker("hide", getcwd())
 
         elif special in lister:
-            rename(seps + special, seps + "sd")
-            chdir("sd")
-            self.locker()
+            if self.getpw():
+                rename(seps + special, seps + "sd")
+                chdir("sd")
+                self.locker("unhide", getcwd())
 
-    def locker(self):
+    def rename_hide(self, dirpath, nameF, mode):
+        absulpath = path.abspath(dirpath)
+        absulpathR = path.abspath(sep.join([dirpath, nameF]))
+        #
+        # print(nameF)
+
+        if mode == "+":
+            chdir(absulpath)
+            p = popen('attrib +h \"{}\"'.format(nameF))
+            p.close()
+
+            name = self.E.main(nameF)
+            rename(absulpathR, absulpathR.replace(nameF, name))
+
+        else:
+            name = self.E.main(nameF)
+            rename(absulpathR, absulpathR.replace(nameF, name))
+
+            chdir(absulpath)
+            p = popen('attrib -h \"{}\"'.format(name))
+            p.close()
+
+        # print(getcwd(), absulpath, name, mode, sep=" * ")
+
+    def locker(self, Hide_Unhide, source):
+        mode = "+" if Hide_Unhide == "hide" else "-"
+
         for (dirpath, dirname, filenames) in walk("."):
             for filename in filenames:
                 if filename not in self.forbidden:
-                    absulpathR = path.abspath(sep.join([dirpath, filename]))
+                    self.rename_hide(dirpath, filename, mode)
 
-                    name = self.E.main(filename)
+        chdir(source)
+        for (dirpath, dirnames, filenames) in walk("."):
+            for dirname in dirnames:
+                self.rename_hide(dirpath, dirname, mode)
 
-                    rename(absulpathR, absulpathR.replace(filename, name))
-
-        for (dirpath, dirname, filenames) in walk("."):
-            for dir in dirname:
-                absulpathR = path.abspath(sep.join([dirpath, dir]))
-
-                name = self.E.main(dir)
-
-                rename(absulpathR, absulpathR.replace(dir, name))
-
-
-
-try:
-    P = Private(".") #D:\\MY Projects\\Python\\Protect\\")
-except:
-    input()
-    raise Exception
-
+if __name__ == "__main__":
+    if syst() == "Windows":
+        try:
+            P = Private(".")  # D:\\MY Projects\\Python\\Protect\\")
+        except Exception as ex:
+            input(ex)
+    if syst() == "Linux":
+        pass
