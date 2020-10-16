@@ -2,6 +2,7 @@ from platform import system as syst
 from os import walk, rename, path, sep, chdir, listdir, popen, getcwd
 from getpass import getpass
 
+
 class Enigma:
     def main(self, text):
 
@@ -76,7 +77,7 @@ class Private:
             p = popen('attrib -h ' + ".\\sd")
             p.close()
 
-    def getpw(self):
+    def getpw(self) -> bool:
         pw = getpass(prompt="\nEnter Password > ")
         if pw == "badass 2":
             return True
@@ -106,10 +107,11 @@ class Private:
                 self.locker("unhide", getcwd())
 
     def rename_hide(self, dirpath, nameF, mode):
+        pwd = getcwd()
+
         absulpath = path.abspath(dirpath)
         absulpathR = path.abspath(sep.join([dirpath, nameF]))
-        #
-        # print(nameF)
+        # print(absulpath, absulpathR, nameF , mode)
 
         if mode == "+":
             chdir(absulpath)
@@ -126,8 +128,8 @@ class Private:
             chdir(absulpath)
             p = popen('attrib -h \"{}\"'.format(name))
             p.close()
-
-        # print(getcwd(), absulpath, name, mode, sep=" * ")
+        # back to Original folder and not broke the last : for_file_in_walk()
+        chdir(pwd)
 
     def locker(self, Hide_Unhide, source):
         mode = "+" if Hide_Unhide == "hide" else "-"
@@ -141,6 +143,7 @@ class Private:
         for (dirpath, dirnames, filenames) in walk("."):
             for dirname in dirnames:
                 self.rename_hide(dirpath, dirname, mode)
+
 
 if __name__ == "__main__":
     if syst() == "Windows":
