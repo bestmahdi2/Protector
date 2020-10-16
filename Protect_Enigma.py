@@ -50,7 +50,6 @@ class Enigma:
             return c1
 
     def rotate_rotors(self):
-
         self.r1 = self.r1[1:] + self.r1[0]
 
         if self.state % 80:
@@ -66,10 +65,9 @@ class Private:
         self.E = Enigma()
         chdir(dest)
 
-        pwd = getcwd()
         self.main()
+        chdir(getcwd())
 
-        chdir(pwd)
         if ".Thumbs.ms.{2227a280-3aea-1069-a2de-08002b30309d}" in listdir("."):
             p = popen('attrib +h ' + ".\\.Thumbs.ms.{2227a280-3aea-1069-a2de-08002b30309d}")
             p.close()
@@ -106,7 +104,7 @@ class Private:
                 chdir("sd")
                 self.locker("unhide", getcwd())
 
-    def rename_hide(self, dirpath, nameF, mode):
+    def rename_hide(self, dirpath, nameF, mode, which):
         pwd = getcwd()
 
         absulpath = path.abspath(dirpath)
@@ -128,8 +126,10 @@ class Private:
             chdir(absulpath)
             p = popen('attrib -h \"{}\"'.format(name))
             p.close()
+
         # back to Original folder and not broke the last : for_file_in_walk()
-        chdir(pwd)
+        if which == "dir":
+            chdir(pwd)
 
     def locker(self, Hide_Unhide, source):
         mode = "+" if Hide_Unhide == "hide" else "-"
@@ -137,12 +137,24 @@ class Private:
         for (dirpath, dirname, filenames) in walk("."):
             for filename in filenames:
                 if filename not in self.forbidden:
-                    self.rename_hide(dirpath, filename, mode)
+                    self.rename_hide(dirpath, filename, mode, which="file")
 
-        chdir(source)
-        for (dirpath, dirnames, filenames) in walk("."):
-            for dirname in dirnames:
-                self.rename_hide(dirpath, dirname, mode)
+        self.Find_folders(source)
+
+    def Find_folders(self, loc):
+        chdir(loc)
+        dirs = [fol for fol in listdir(".") if path.isdir(fol)]
+        if dirs:
+            x = 0
+            while x < len(dirs):
+                name = self.E.main(dirs[x])
+                rename(dirs[x], name)
+                dirs[x] = name
+                x += 1
+
+            for fol in dirs:
+                self.Find_folders(fol)
+                chdir("..")
 
 
 if __name__ == "__main__":
