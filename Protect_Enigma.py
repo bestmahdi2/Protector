@@ -183,9 +183,9 @@ class Private:
 
 if __name__ == "__main__":
     if syst() == "Windows":
-        # try:
+        try:
             P = Private(".")  # D:\\MY Projects\\Python\\Protect\\")
-        # except Exception as ex:
-        #     input(ex)
+        except Exception as ex:
+            input(ex)
     if syst() == "Linux":
         pass
