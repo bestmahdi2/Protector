@@ -61,16 +61,17 @@ class Enigma:
 class Private:
     def __init__(self, dest="."):
         self.forbidden = ["alaki.py", "zzz.py", "Protect.py"]
-
+        pwd = getcwd()
         self.E = Enigma()
         chdir(dest)
 
         self.main()
-        chdir(getcwd())
+        chdir(pwd)
 
         if ".Thumbs.ms.{2227a280-3aea-1069-a2de-08002b30309d}" in listdir("."):
             p = popen('attrib +h ' + ".\\.Thumbs.ms.{2227a280-3aea-1069-a2de-08002b30309d}")
             p.close()
+
         elif "sd" in listdir("."):
             p = popen('attrib -h ' + ".\\sd")
             p.close()
@@ -104,7 +105,7 @@ class Private:
                 chdir("sd")
                 self.locker("unhide", getcwd())
 
-    def rename_hide(self, dirpath, nameF, mode, which):
+    def File_rename_hide(self, dirpath, nameF, mode):
         pwd = getcwd()
 
         absulpath = path.abspath(dirpath)
@@ -128,16 +129,39 @@ class Private:
             p.close()
 
         # back to Original folder and not broke the last : for_file_in_walk()
-        if which == "dir":
-            chdir(pwd)
+        chdir(pwd)
+
+    def Folder_hide(self, dirpath, name, mode):
+        pwd = getcwd()
+
+        absulpath = path.abspath(dirpath)
+        absulpathR = path.abspath(sep.join([dirpath, name]))
+
+        if mode == "+":
+            chdir(absulpath)
+            p = popen('attrib +h \"{}\"'.format(name))
+            p.close()
+
+        else:
+            chdir(absulpath)
+            p = popen('attrib -h \"{}\"'.format(name))
+            p.close()
+
+        # back to Original folder and not broke the last : for_folder_in_walk()
+        chdir(pwd)
+
 
     def locker(self, Hide_Unhide, source):
         mode = "+" if Hide_Unhide == "hide" else "-"
 
-        for (dirpath, dirname, filenames) in walk("."):
+        for (dirpath, dirnames, filenames) in walk("."):
             for filename in filenames:
                 if filename not in self.forbidden:
-                    self.rename_hide(dirpath, filename, mode, which="file")
+                    self.File_rename_hide(dirpath, filename, mode)
+
+        for (dirpath, dirnames, filenames) in walk("."):
+            for dirname in dirnames:
+                self.Folder_hide(dirpath, dirname, mode)
 
         self.Find_folders(source)
 
@@ -159,9 +183,9 @@ class Private:
 
 if __name__ == "__main__":
     if syst() == "Windows":
-        try:
+        # try:
             P = Private(".")  # D:\\MY Projects\\Python\\Protect\\")
-        except Exception as ex:
-            input(ex)
+        # except Exception as ex:
+        #     input(ex)
     if syst() == "Linux":
         pass
