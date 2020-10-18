@@ -1,10 +1,20 @@
 from platform import system as syst
 from os import walk, rename, path, sep, chdir, listdir, popen, getcwd
 from getpass import getpass
+from progressbar import ProgressBar, Percentage, Bar, ETA
 
 
 class Enigma:
-    def main(self, text):
+    def __init__(self, text):
+        self.plain = text
+
+    def __call__(self, text):
+        self.plain = text
+
+    def __str__(self):
+        return self.main()
+
+    def main(self):
 
         self.alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.+-=_@#$%&[]{},;!~123456789"
         self.r1 = ";%5=lmOQnLd@$W8v3R7qx!~bKp#+gC]hIeVJ{zow-_,U}tFiX491asYPGNA2r[.M6yDjuHkBfEZ&TcS"
@@ -13,11 +23,10 @@ class Enigma:
 
         forbiden = "آابپتثجچحخدذرزژسشصضظطغعفقکگلمنوهئی"
 
-        plain = text
         cipher = ""
         self.state = 0
 
-        for char in plain:
+        for char in self.plain:
             if char not in forbiden:
                 self.state += 1
                 cipher += self.enigma_one_char(char)
@@ -62,7 +71,6 @@ class Private:
     def __init__(self, dest="."):
         self.forbidden = ["alaki.py", "zzz.py", "Protect.py"]
         pwd = getcwd()
-        self.E = Enigma()
         chdir(dest)
 
         self.main()
@@ -117,11 +125,11 @@ class Private:
             p = popen('attrib +h \"{}\"'.format(nameF))
             p.close()
 
-            name = self.E.main(nameF)
+            name = str(Enigma(nameF))
             rename(absulpathR, absulpathR.replace(nameF, name))
 
         else:
-            name = self.E.main(nameF)
+            name = str(Enigma(nameF))
             rename(absulpathR, absulpathR.replace(nameF, name))
 
             chdir(absulpath)
@@ -150,20 +158,38 @@ class Private:
         # back to Original folder and not broke the last : for_folder_in_walk()
         chdir(pwd)
 
-
     def locker(self, Hide_Unhide, source):
         mode = "+" if Hide_Unhide == "hide" else "-"
+
+        # region ProgressBar
+        fileCount = 0
+        for (dirpath, dirnames, filenames) in walk("."):
+            fileCount += len(filenames)
+            fileCount += len(dirnames)
+
+        print()
+        widgets = ['Processing: ', Percentage(), ' ', Bar(marker='#', left='[', right=']'), ',  ', ETA(),
+                   ',  Files\\Folders: ', str(fileCount)]
+        bar = ProgressBar(widgets=widgets, maxval=fileCount)
+        x = 1
+        bar.start()
+        # endregion
 
         for (dirpath, dirnames, filenames) in walk("."):
             for filename in filenames:
                 if filename not in self.forbidden:
                     self.File_rename_hide(dirpath, filename, mode)
+                    bar.update(x)
+                    x += 1
 
         for (dirpath, dirnames, filenames) in walk("."):
             for dirname in dirnames:
                 self.Folder_hide(dirpath, dirname, mode)
+                bar.update(x)
+                x += 1
 
         self.Find_folders(source)
+        bar.finish()
 
     def Find_folders(self, loc):
         chdir(loc)
@@ -171,7 +197,7 @@ class Private:
         if dirs:
             x = 0
             while x < len(dirs):
-                name = self.E.main(dirs[x])
+                name = str(Enigma(dirs[x]))
                 rename(dirs[x], name)
                 dirs[x] = name
                 x += 1
