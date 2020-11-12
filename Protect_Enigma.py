@@ -1,6 +1,9 @@
 from platform import system as syst
 from os import walk, rename, path, sep, chdir, listdir, popen, getcwd
 from getpass import getpass
+from random import choice
+from sys import argv
+
 from progressbar import ProgressBar, Percentage, Bar, ETA
 
 
@@ -22,17 +25,22 @@ class Enigma:
         self.r3 = "z%EGq_+aAl~jVKU7nt6$u.HWsfLdi=eSy!RT2]C@,xJgo[cB-YZv}PF39O4;Qw#5pbk1m8MXD{h&NIr"
 
         forbiden = "آابپتثجچحخدذرزژسشصضظطغعفقکگلمنوهئی"
+        forbiden_additional = "战魔獸界王之地世"
 
         cipher = ""
         self.state = 0
 
         for char in self.plain:
-            if char not in forbiden:
+
+            if char in forbiden:
+                cipher += char
+            elif char in forbiden_additional:
+                cipher += char
+            else:
                 self.state += 1
                 cipher += self.enigma_one_char(char)
                 self.rotate_rotors()
-            else:
-                cipher += char
+
 
         return cipher
 
@@ -84,7 +92,8 @@ class Private:
             p = popen('attrib -h ' + ".\\sd")
             p.close()
 
-    def getpw(self) -> bool:
+    @staticmethod
+    def getpw() -> bool:
         pw = getpass(prompt="\nEnter Password > ")
         if pw == "badass 2":
             return True
@@ -113,12 +122,27 @@ class Private:
                 chdir("sd")
                 self.locker("unhide", getcwd())
 
-    def File_rename_hide(self, dirpath, nameF, mode):
-        pwd = getcwd()
+    @staticmethod
+    def Additional_char(name):
+        additional_char = ["战", "魔", "獸", "界", "王", "之", "地", "世"]
+        namelist = list(name)
+        if len([i for i in additional_char if i in name]) > 0:
+            for i in additional_char:
+                if i in namelist:
+                    namelist.remove(i)
+        else:
+            selected = additional_char[choice(range(0, len(additional_char) - 1))]
+            namelist.insert(choice(range(0, len(name) - 1)), selected)
 
+        name = "".join(namelist)
+        return name
+
+    @staticmethod
+    def File_rename_hide(dirpath, nameF, mode):
+        pwd = getcwd()
         absulpath = path.abspath(dirpath)
         absulpathR = path.abspath(sep.join([dirpath, nameF]))
-        # print(absulpath, absulpathR, nameF , mode)
+        # print("ok")
 
         if mode == "+":
             chdir(absulpath)
@@ -126,10 +150,12 @@ class Private:
             p.close()
 
             name = str(Enigma(nameF))
+            name = Private.Additional_char(name)
             rename(absulpathR, absulpathR.replace(nameF, name))
 
         else:
             name = str(Enigma(nameF))
+            name = Private.Additional_char(name)
             rename(absulpathR, absulpathR.replace(nameF, name))
 
             chdir(absulpath)
@@ -139,7 +165,8 @@ class Private:
         # back to Original folder and not broke the last : for_file_in_walk()
         chdir(pwd)
 
-    def Folder_hide(self, dirpath, name, mode):
+    @staticmethod
+    def Folder_hide(dirpath, name, mode):
         pwd = getcwd()
 
         absulpath = path.abspath(dirpath)
@@ -198,6 +225,7 @@ class Private:
             x = 0
             while x < len(dirs):
                 name = str(Enigma(dirs[x]))
+                name = Private.Additional_char(name)
                 rename(dirs[x], name)
                 dirs[x] = name
                 x += 1
@@ -206,12 +234,46 @@ class Private:
                 self.Find_folders(fol)
                 chdir("..")
 
+class Repair:
+    def __init__(self):
+        print("Start Fixing ...")
+
+        additional_char = ["战", "魔", "獸", "界", "王", "之", "地", "世"]
+        # unhide files and folders
+        mode = "-"
+
+        for (dirpath, dirnames, filenames) in walk("."):
+            for filename in filenames:
+                if len([i for i in additional_char if i in filename]) > 0:
+                    for i in additional_char:
+                        if i in filename:
+                            Private.File_rename_hide(dirpath, filename, mode)
+
+        for (dirpath, dirnames, filenames) in walk("."):
+            for dirname in dirnames:
+                if len([i for i in additional_char if i in dirname]) > 0:
+                    for i in additional_char:
+                        if i in dirname:
+                            Private.Folder_hide(dirpath, dirname, mode)
+
+        print("Fixing finished. Files are unlocked.")
+
 
 if __name__ == "__main__":
-    if syst() == "Windows":
-        try:
-            P = Private(".")  # D:\\MY Projects\\Python\\Protect\\")
-        except Exception as ex:
-            input(ex)
-    if syst() == "Linux":
-        pass
+    if len(argv) == 1:
+        if syst() == "Windows":
+            try:
+                P = Private(".")  # D:\\MY Projects\\Python\\Protect\\")
+            except Exception as ex:
+                input(ex)
+        if syst() == "Linux":
+            pass
+
+    if len(argv) == 2:
+        if argv[1] == "-fix":
+            R = Repair()
+        else:
+            input("INPUT LIKE THIS:   Protector.exe -fix")
+
+    if len(argv) > 2:
+        input("INPUT LIKE THIS:   Protector.exe -fix")
