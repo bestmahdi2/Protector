@@ -1,1 +1,5 @@
 python -m compileall .
+
+pyinstaller .\Protect_Enigma.py --name Protect_Enigma.Win64 --onefile --icon=.\brick_wall.ico
+
+pyinstaller .\Protect_Enigma.py --name Protect_Enigma.Win32 --onefile --icon=.\brick_wall.ico
